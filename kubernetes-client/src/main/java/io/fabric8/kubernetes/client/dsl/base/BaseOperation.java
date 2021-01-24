@@ -749,7 +749,9 @@ public class BaseOperation<T, L extends KubernetesResourceList, D extends Doneab
         this,
         resourceVersion,
         watcherToggle,
-        config
+        config.getWatchReconnectInterval(),
+        config.getWatchReconnectLimit(),
+        config.getConnectionTimeout()
       );
       watch.waitUntilReady();
       return watch;

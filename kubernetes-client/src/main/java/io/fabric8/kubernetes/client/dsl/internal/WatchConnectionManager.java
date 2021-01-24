@@ -17,7 +17,6 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.Status;
 import io.fabric8.kubernetes.api.model.WatchEvent;
-import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
@@ -70,17 +69,15 @@ public class WatchConnectionManager<T extends HasMetadata, L extends KubernetesR
 
   private WebSocket webSocket;
   private OkHttpClient clonedClient;
-  private Config config;
 
   public WatchConnectionManager(final OkHttpClient client, final BaseOperation<T, L, ?, ?> baseOperation, final String version, final Watcher<T> watcher,
-                                Config config, int maxIntervalExponent) throws MalformedURLException {
+                                final int reconnectInterval, final int reconnectLimit, long websocketTimeout, int maxIntervalExponent) throws MalformedURLException {
     this.resourceVersion = new AtomicReference<>(version); // may be a reference to null
     this.baseOperation = baseOperation;
     this.watcher = watcher;
-    this.reconnectInterval = config.getWatchReconnectInterval();
-    this.reconnectLimit = config.getWatchReconnectLimit();
-    this.websocketTimeout = config.getWebsocketTimeout();
-    this.config = config;
+    this.reconnectInterval = reconnectInterval;
+    this.reconnectLimit = reconnectLimit;
+    this.websocketTimeout = websocketTimeout;
     this.maxIntervalExponent = maxIntervalExponent;
 
     this.clonedClient = client.newBuilder()
@@ -101,9 +98,9 @@ public class WatchConnectionManager<T extends HasMetadata, L extends KubernetesR
     runWatch();
   }
 
-  public WatchConnectionManager(final OkHttpClient client, final BaseOperation<T, L, ?, ?> baseOperation, final String version, final Watcher<T> watcher, Config config) throws MalformedURLException {
+  public WatchConnectionManager(final OkHttpClient client, final BaseOperation<T, L, ?, ?> baseOperation, final String version, final Watcher<T> watcher, final int reconnectInterval, final int reconnectLimit, long websocketTimeout) throws MalformedURLException {
     // Default max 32x slowdown from base interval
-    this(client, baseOperation, version, watcher, config, 5);
+    this(client, baseOperation, version, watcher, reconnectInterval, reconnectLimit, websocketTimeout, 5);
   }
 
   private final void runWatch() {
@@ -155,7 +152,7 @@ public class WatchConnectionManager<T extends HasMetadata, L extends KubernetesR
       .url(httpUrlBuilder.build())
       .addHeader("Origin", origin);
 
-    Map<String, String> customHeaderMap = config.getCustomHeaders();
+    Map<String, String> customHeaderMap = baseOperation.getConfig().getCustomHeaders();
     if (null != customHeaderMap && !customHeaderMap.isEmpty()) {
       for (String key : customHeaderMap.keySet()) {
         requestBuilder.addHeader(key, customHeaderMap.get(key));
