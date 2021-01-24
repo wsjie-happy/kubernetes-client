@@ -744,16 +744,6 @@ public class BaseOperation<T, L extends KubernetesResourceList, D extends Doneab
     WatcherToggle<T> watcherToggle = new WatcherToggle<>(watcher, true);
     WatchConnectionManager watch = null;
     try {
-//      watch = new WatchConnectionManager(
-//        client,
-//        this,
-//        resourceVersion,
-//        watcherToggle,
-//        config.getWatchReconnectInterval(),
-//        config.getWatchReconnectLimit(),
-//        config.getWebsocketTimeout()
-//      );
-
       watch = new WatchConnectionManager(
         client,
         this,
