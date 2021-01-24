@@ -6,6 +6,7 @@
 * Fix #2144: CRD's schema Default fields do not handle boolean and are prefixed with Raw keyword
 * KubernetesAttributeExtractor: handle possible /status subpath due to using status subresource on crd
 * Fix #2124: Raw Watch on CustomResource does not work if name specified
+* Fix #2748: Pass custom headers in kubernetes-client to watch api by modify WatchConnectionManager
 
 #### Improvements
 * Fix #2174: Change log level to warn for multiple `kubeconfig` warning
